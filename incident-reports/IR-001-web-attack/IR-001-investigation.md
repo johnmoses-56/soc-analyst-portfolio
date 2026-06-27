@@ -579,3 +579,17 @@ index=firewall_logs src_ip="10.10.9.*"
 - No MFA on the admin account
 - Apache version exposed in the Server header
 - No WAF rules for common scanning user-agents
+---
+
+## 12. REFERENCES
+
+- MITRE ATT&CK Framework: https://attack.mitre.org
+- CVE-2021-41773 (Apache Path Traversal): https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-41773
+- OWASP Top 10: https://owasp.org/www-project-top-ten/
+- NIST Incident Response Guide (SP 800-61): https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-61r2.pdf
+
+---
+
+*Report prepared by: John Moses, SOC Level 1 Analyst*  
+*Report date: June 25, 2026*  
+*Classification: CONFIDENTIAL — Internal Use Only*
