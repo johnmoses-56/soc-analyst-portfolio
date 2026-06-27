@@ -259,3 +259,88 @@ evidence for investigators.
 
 This indicates the attacker understood post-exploitation techniques and
 attempted to remove traces of their activity.
+### Phase 3: Credential Brute Force (02:15 AM – 02:43 AM)
+
+**What happened:** The attacker switched tools and launched an automated
+credential stuffing/brute force attack against the login endpoint.
+
+### Tool Change Detected — New User-Agent
+
+```
+python-requests/2.26.0
+```
+
+The attacker switched from Nikto (scanner) to a custom Python script using
+the `requests` library. This is a common brute force setup because it is
+lightweight, fast, and easy to automate.
+
+### Key Log Evidence
+
+```
+02:15:00  POST /login.php → 401  (failed login #1)
+02:15:01  POST /login.php → 401  (failed login #2)
+
+[... 847 failed attempts over 28 minutes ...]
+
+02:43:59  POST /login.php → 200  (SUCCESS)
+```
+
+---
+
+### Why POST is Used for Login
+
+HTTP POST sends credentials inside the request body instead of the URL.
+
+This prevents usernames and passwords from appearing in browser history,
+proxy logs, bookmarks, and cached URLs.
+
+---
+
+### Understanding the 401 → 200 Pattern
+
+- **401 Unauthorized** = Login failed.
+- **847 consecutive 401 responses** = Automated brute force attack.
+- **One final 200 response** = Login succeeded.
+
+This pattern is a classic brute-force signature.
+
+The attacker likely obtained valid credentials from the exposed
+`backup.zip` file discovered during reconnaissance.
+
+---
+
+### Authentication Server Confirmation
+
+```
+02:43:59 AUTH_ATTEMPT
+USER: admin
+STATUS: SUCCESS
+SESSION_ID: a7f3k9x2
+```
+
+The Authentication Server confirms that the attacker successfully logged in
+as the **admin** user.
+
+A valid session identified by **a7f3k9x2** was created.
+
+From this point onward, the attacker no longer needed to repeatedly send
+credentials. Every request carrying this session ID would be treated as an
+authenticated administrator.
+
+---
+
+### OSI Layer Significance
+
+This attack primarily affects:
+
+- **Layer 7 (Application)** — Login requests using HTTP POST.
+- **Layer 5 (Session)** — A valid authenticated session was established.
+
+Even if the administrator immediately changed the password, the attacker
+could remain logged in until the active session was invalidated.
+
+For this reason, incident response must include:
+
+- Session termination
+- Password reset
+- Account investigation
