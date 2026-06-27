@@ -344,3 +344,67 @@ For this reason, incident response must include:
 - Session termination
 - Password reset
 - Account investigation
+### Phase 4: Data Access and Exfiltration (02:44 AM – 02:47 AM)
+
+**What happened:** Using the compromised admin session, the attacker
+accessed sensitive data endpoints and attempted to exfiltrate the database.
+
+### Key Log Evidence
+
+```
+02:44:01  GET /dashboard          → 200 (8,932 bytes)
+02:44:15  GET /api/users          → 200 (94,821 bytes)   ⚠️ 4,821 user records
+02:44:45  GET /api/transactions   → 200 (524,288 bytes)  ⚠️ 18,432 transaction records
+02:47:33  FIREWALL BLOCK: 10.10.9.5 → 185.220.101.45:443 BLOCKED
+```
+
+---
+
+### Content-Length Analysis
+
+```
+/dashboard           →   8,932 bytes
+/api/users           →  94,821 bytes
+/api/transactions    → 524,288 bytes
+```
+
+The response sizes indicate how much information was returned.
+
+The unusually large responses for `/api/users` and
+`/api/transactions` suggest that sensitive information was successfully
+retrieved through the compromised administrator account.
+
+---
+
+### Firewall Alert
+
+```
+SRC: 10.10.9.5
+DST: 185.220.101.45
+PORT: 443
+RULE: PRIVATE-TO-EXTERNAL-BLOCKED
+```
+
+This is the most critical firewall event in the investigation.
+
+The database server (`10.10.9.5`) attempted to establish an outbound HTTPS
+connection to the attacker's external IP address.
+
+The firewall correctly blocked the connection because database servers
+should never communicate directly with the Internet.
+
+---
+
+### Why This Matters
+
+This event indicates that:
+
+- The attacker successfully authenticated.
+- Sensitive records were accessed.
+- An outbound data exfiltration attempt occurred.
+- Network segmentation prevented a direct database-to-Internet connection.
+
+Although the firewall blocked the outbound connection, sensitive data had
+already been accessed through the authenticated web application session.
+
+This confirms a successful compromise requiring immediate incident response.
