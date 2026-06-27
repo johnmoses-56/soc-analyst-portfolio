@@ -194,3 +194,68 @@ the HTTP headers without downloading the page content.
 This confirmed that the login page existed while minimizing traffic.
 
 This marks the transition from passive reconnaissance to active targeting.
+### Phase 2: Vulnerability Probing (02:03 AM – 02:04 AM)
+
+**What happened:** The attacker attempted two high-risk attack techniques
+and one cover-up attempt.
+
+### Key Log Evidence
+
+```
+02:03:22 GET /index.php?page=../../../../etc/passwd → 500
+02:03:45 PUT /shell.php                             → 403
+02:04:10 DELETE /logs/access.log                    → 403
+```
+
+---
+
+### GET /index.php?page=../../../../etc/passwd → 500
+
+This is a **Path Traversal Attack**.
+
+The `../../../../` sequence attempts to move outside the web application's
+directory and access the Linux system file:
+
+```
+/etc/passwd
+```
+
+A `500 Internal Server Error` is significant because the server did not simply
+reject the request—it encountered an internal error while processing it.
+
+This may indicate:
+
+- The application is vulnerable but another control stopped the exploit.
+- The application crashed while handling the malicious input.
+
+Either case requires immediate investigation.
+
+**OSI Layer:** Layer 7 (Application)
+
+---
+
+### PUT /shell.php → 403
+
+The attacker attempted to upload a malicious PHP web shell.
+
+A web shell would allow the attacker to remotely execute commands on the server.
+
+The `403 Forbidden` response confirms the upload was blocked.
+
+Even though the attack failed, PUT requests from external sources are highly
+suspicious and should trigger an alert.
+
+---
+
+### DELETE /logs/access.log → 403
+
+The attacker attempted to delete the web server's access logs.
+
+Deleting logs is a common **anti-forensics** technique used to hide evidence
+after compromising a system.
+
+The request was blocked (`403 Forbidden`), preserving valuable forensic
+evidence for investigators.
+
+This indicates the attacker understood post-exploitation techniques and
+attempted to remove traces of their activity.
