@@ -460,3 +460,15 @@ PHASE 4: DATA EXFILTRATION (L7 Application + L3 Network)
 | Exposed File | /backup.zip | Confirmed |
 | Targeted Endpoints | /api/users, /api/transactions | Confirmed |
 | C2 Destination | 185.220.101.45:443 | High |
+---
+
+## 7. MITRE ATT&CK MAPPING
+
+| Tactic | Technique | Evidence |
+|---|---|---|
+| Reconnaissance | T1595 — Active Scanning | Nikto web scanner, mass GET requests |
+| Initial Access | T1190 — Exploit Public-Facing Application | Path traversal attempt, config.php access |
+| Credential Access | T1110 — Brute Force | 847 failed POSTs → 1 successful |
+| Collection | T1213 — Data from Information Repositories | /api/users, /api/transactions accessed |
+| Exfiltration | T1041 — Exfiltration Over C2 Channel | DB server → attacker IP:443 (blocked) |
+| Defense Evasion | T1070 — Indicator Removal | DELETE /logs/access.log attempt |
