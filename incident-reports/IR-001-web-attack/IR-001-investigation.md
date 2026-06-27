@@ -523,3 +523,32 @@ index=firewall_logs src_ip="10.10.9.*"
 | where NOT match(dest_ip, "^10\.")
 | table _time, src_ip, dest_ip, dest_port, action
 ```
+---
+
+## 10. RECOMMENDATIONS
+
+### Immediate (Within 24 Hours)
+
+1. Remove `/config.php` and `/backup.zip` from the web root immediately
+2. Audit all files accessible from the web server — remove any sensitive files
+3. Implement rate limiting on `/login.php` — block IPs after 5 failed attempts
+4. Block User-Agent strings containing `Nikto`, `sqlmap`, `python-requests` at the WAF
+5. Suppress Apache version from the Server response header (currently exposing Apache/2.4.49)
+6. Patch Apache — version 2.4.49 has critical CVE-2021-41773 path traversal vulnerability
+
+### Short Term (Within 1 Week)
+
+1. Implement Web Application Firewall (WAF) rules for path traversal patterns (`../`)
+2. Disable PUT and DELETE methods at the web server configuration level
+3. Implement Multi-Factor Authentication (MFA) on all admin accounts
+4. Enable session timeout on admin sessions (maximum 30 minutes idle)
+5. Move backup files outside the web root entirely — never store them in publicly accessible directories
+6. Review and harden network firewall rules — verify Private → External is blocked for all zones
+
+### Long Term (Within 1 Month)
+
+1. Conduct a full penetration test on the web application
+2. Implement SIEM alerting for all patterns identified in this report
+3. Establish a baseline for normal API response sizes — alert on deviations
+4. Implement Privileged Access Management (PAM) for admin account access
+5. Review data classification — `/api/users` and `/api/transactions` should require additional authorization beyond a session cookie
