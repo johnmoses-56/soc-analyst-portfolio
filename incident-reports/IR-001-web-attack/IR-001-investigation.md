@@ -472,3 +472,17 @@ PHASE 4: DATA EXFILTRATION (L7 Application + L3 Network)
 | Collection | T1213 — Data from Information Repositories | /api/users, /api/transactions accessed |
 | Exfiltration | T1041 — Exfiltration Over C2 Channel | DB server → attacker IP:443 (blocked) |
 | Defense Evasion | T1070 — Indicator Removal | DELETE /logs/access.log attempt |
+---
+
+## 8. IMMEDIATE RESPONSE ACTIONS TAKEN
+
+As SOC Level 1 Analyst, the following immediate actions were taken:
+
+| Priority | Action | Rationale |
+|---|---|---|
+| 1 | Block 185.220.101.45 at perimeter firewall | Stop ongoing attack |
+| 2 | Invalidate session a7f3k9x2 immediately | Terminate attacker's active session |
+| 3 | Force password reset on admin account | Compromised credential |
+| 4 | Take web server offline for forensic analysis | Preserve evidence |
+| 5 | Escalate to SOC L2 and Incident Response team | Confirmed breach |
+| 6 | Notify management — data breach possible | 4,821 users + 18,432 transactions |
