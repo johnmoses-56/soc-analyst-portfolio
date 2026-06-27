@@ -87,3 +87,110 @@ understand what tools and controls would detect or prevent each phase.
 | Credential validation | L7 Application | POST request to login endpoint |
 | Data access via API | L7 Application | GET requests to /api endpoints |
 | Data exfiltration attempt | L3 Network | Private IP attempting outbound connection |
+
+---
+
+## 4. ATTACK TIMELINE
+
+### Phase 1: Reconnaissance (02:00 AM – 02:04 AM)
+
+**What happened:** The attacker used Nikto — an automated web vulnerability
+scanner — to map the web application, identify valid pages, and probe for
+known vulnerabilities.
+
+### How we know it's Nikto
+
+The User-Agent string in every request reads:
+
+```
+Mozilla/5.0 (compatible; Nikto/2.1.6)
+```
+
+Legitimate users use browsers (Chrome, Firefox, Safari).
+The string `Nikto/2.1.6` identifies this as an automated scanning tool,
+not a human browser. User-agent strings can be spoofed, but in this case
+the request pattern (hundreds of requests in seconds to common vulnerability
+paths) confirms automated scanning.
+
+### Key Log Evidence
+
+```
+02:00:11 GET /              → 200  (homepage found — valid target confirmed)
+02:00:13 GET /admin         → 404  (not found — attacker mapping structure)
+02:00:15 GET /admin.php     → 404  (not found)
+02:00:18 GET /wp-admin      → 404  (not found — tested for WordPress)
+02:00:21 GET /config.php    → 200  ⚠️ CONFIG FILE EXPOSED
+02:00:24 GET /backup.zip    → 200  ⚠️ BACKUP FILE DOWNLOADED (5.2 MB)
+02:01:45 HEAD /login.php    → 200  (confirmed login page exists)
+```
+
+### Analysis of Each Request
+
+**GET / → 200**
+
+The attacker confirmed the server was online and responding.
+HTTP GET retrieves a web page. A `200 OK` response means the homepage
+was successfully served, confirming the target was reachable.
+
+---
+
+**GET /admin → 404**
+
+**GET /admin.php → 404**
+
+**GET /wp-admin → 404**
+
+These are classic **directory enumeration** attempts.
+
+The attacker systematically requested common administrative paths to
+discover hidden pages.
+
+A `404 Not Found` response means the requested page does not exist,
+but repeated 404s from one IP are a common reconnaissance indicator.
+
+---
+
+**GET /config.php → 200**
+
+🚨 **Critical Finding**
+
+A configuration file was successfully downloaded.
+
+Configuration files often contain:
+
+- Database credentials
+- API keys
+- Internal IP addresses
+- Application secrets
+
+These files should never be publicly accessible.
+
+---
+
+**GET /backup.zip → 200**
+
+🚨 **Critical Finding**
+
+A **5.2 MB backup archive** was downloaded.
+
+Large backup files commonly contain:
+
+- Source code
+- Database dumps
+- Configuration files
+- Credentials
+
+This single event may have provided everything needed for later attack stages.
+
+---
+
+**HEAD /login.php → 200**
+
+Browsers rarely send `HEAD` requests.
+
+Security scanners frequently use HEAD requests because they retrieve only
+the HTTP headers without downloading the page content.
+
+This confirmed that the login page existed while minimizing traffic.
+
+This marks the transition from passive reconnaissance to active targeting.
