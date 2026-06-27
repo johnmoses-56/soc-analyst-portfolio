@@ -486,3 +486,40 @@ As SOC Level 1 Analyst, the following immediate actions were taken:
 | 4 | Take web server offline for forensic analysis | Preserve evidence |
 | 5 | Escalate to SOC L2 and Incident Response team | Confirmed breach |
 | 6 | Notify management — data breach possible | 4,821 users + 18,432 transactions |
+---
+
+## 9. SPLUNK QUERIES (Conceptual)
+
+The following SPL queries would detect this attack pattern:
+
+```spl
+# Detect directory enumeration — mass 404s from single IP
+index=web_logs status=404
+| stats count by src_ip
+| where count > 50
+| sort -count
+
+# Detect suspicious user agents
+index=web_logs
+| search user_agent="*Nikto*" OR user_agent="*sqlmap*" OR user_agent="*python-requests*"
+| table _time, src_ip, user_agent, uri, status
+
+# Detect brute force — mass 401s followed by 200
+index=web_logs uri="/login.php" status=401
+| stats count by src_ip
+| where count > 10
+
+# Detect dangerous HTTP methods
+index=web_logs method IN ("PUT", "DELETE", "HEAD")
+| table _time, src_ip, method, uri, status
+
+# Detect large response bodies (potential exfiltration)
+index=web_logs status=200
+| where content_length > 50000
+| table _time, src_ip, uri, content_length
+
+# Detect private network outbound (critical violation)
+index=firewall_logs src_ip="10.10.9.*"
+| where NOT match(dest_ip, "^10\.")
+| table _time, src_ip, dest_ip, dest_port, action
+```
