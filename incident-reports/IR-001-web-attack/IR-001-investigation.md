@@ -552,3 +552,30 @@ index=firewall_logs src_ip="10.10.9.*"
 3. Establish a baseline for normal API response sizes — alert on deviations
 4. Implement Privileged Access Management (PAM) for admin account access
 5. Review data classification — `/api/users` and `/api/transactions` should require additional authorization beyond a session cookie
+---
+
+## 11. LESSONS LEARNED
+
+### What the Attacker Did Well
+
+- Used legitimate-looking user-agent initially
+- Switched tools between phases to vary signature
+- Targeted high-value endpoints immediately after login
+- Attempted evidence destruction (log deletion)
+- Used HTTPS (port 443) for C2 to blend with legitimate traffic
+
+### What Our Defenses Did Well
+
+- Perimeter firewall blocked private network outbound traffic
+- PUT and DELETE methods were blocked (403)
+- Log deletion was blocked (403)
+- IDS fired an alert during high-volume scanning phase
+
+### What Failed
+
+- `config.php` was publicly accessible (misconfiguration)
+- `backup.zip` was publicly accessible (misconfiguration)
+- No rate limiting on the login endpoint (allowed 848 attempts)
+- No MFA on the admin account
+- Apache version exposed in the Server header
+- No WAF rules for common scanning user-agents
