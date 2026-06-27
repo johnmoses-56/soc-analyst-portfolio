@@ -408,3 +408,40 @@ Although the firewall blocked the outbound connection, sensitive data had
 already been accessed through the authenticated web application session.
 
 This confirms a successful compromise requiring immediate incident response.
+---
+
+## 5. COMPLETE ATTACK CHAIN
+
+```text
+PHASE 1: RECONNAISSANCE (L7 Application)
+
+185.220.101.45 → Nikto scanner → Web Server DMZ
+├── Directory enumeration (mass 404s)
+├── config.php exposed (200) ← CREDENTIAL LEAK
+└── backup.zip downloaded (200, 5.2MB) ← SOURCE CODE/DB LEAK
+
+         ↓
+
+PHASE 2: VULNERABILITY PROBING (L7 Application)
+
+├── Path traversal attempt /etc/passwd (500 — server error, possible vuln)
+├── Web shell upload attempt PUT /shell.php (403 — blocked)
+└── Log deletion attempt DELETE /logs/access.log (403 — blocked)
+
+         ↓
+
+PHASE 3: BRUTE FORCE (L5 Session + L7 Application)
+
+185.220.101.45 → python-requests → /login.php
+├── 847 × POST → 401 (failed attempts)
+└── 1 × POST → 200 (SUCCESS — admin credentials compromised)
+    └── Session cookie a7f3k9x2 issued
+
+         ↓
+
+PHASE 4: DATA EXFILTRATION (L7 Application + L3 Network)
+
+├── GET /api/users → 200 (4,821 user records sent to attacker)
+├── GET /api/transactions → 200 (18,432 financial records sent to attacker)
+└── 10.10.9.5 → 185.220.101.45:443 BLOCKED (DB direct exfil attempt — stopped)
+```
