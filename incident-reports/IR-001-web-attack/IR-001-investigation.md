@@ -71,3 +71,19 @@ network segmentation. This is why severity is rated CRITICAL.
 - Private Network data (10.10.9.5) attempted to flow to external internet — BLOCKED
 - Attacker gained access to Private Network 1 (authentication zone) from internet
 - Database records (Private Network 2) were accessed by an unauthenticated external party
+---
+
+## 3. OSI MODEL MAPPING
+
+Understanding which OSI layer each attack phase occurred at helps us
+understand what tools and controls would detect or prevent each phase.
+
+| Attack Phase | OSI Layer | Why This Layer |
+|---|---|---|
+| Port scanning / reconnaissance | L4 Transport | Attacker probing destination ports |
+| HTTP request scanning | L7 Application | GET/HEAD requests to web server |
+| User-agent fingerprinting | L6 Presentation | Encoding/tool identification in headers |
+| Brute force login | L5 Session | Cookie/session token being targeted |
+| Credential validation | L7 Application | POST request to login endpoint |
+| Data access via API | L7 Application | GET requests to /api endpoints |
+| Data exfiltration attempt | L3 Network | Private IP attempting outbound connection |
