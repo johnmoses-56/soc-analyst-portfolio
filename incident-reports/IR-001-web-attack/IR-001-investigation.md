@@ -445,3 +445,18 @@ PHASE 4: DATA EXFILTRATION (L7 Application + L3 Network)
 ├── GET /api/transactions → 200 (18,432 financial records sent to attacker)
 └── 10.10.9.5 → 185.220.101.45:443 BLOCKED (DB direct exfil attempt — stopped)
 ```
+---
+
+## 6. INDICATORS OF COMPROMISE (IOCs)
+
+| IOC Type | Value | Confidence |
+|---|---|---|
+| Attacker IP | 185.220.101.45 | High |
+| Malicious User-Agent | Nikto/2.1.6 | High |
+| Malicious User-Agent | python-requests/2.26.0 | High |
+| Compromised Account | admin | Confirmed |
+| Compromised Session | a7f3k9x2 | Confirmed |
+| Exposed File | /config.php | Confirmed |
+| Exposed File | /backup.zip | Confirmed |
+| Targeted Endpoints | /api/users, /api/transactions | Confirmed |
+| C2 Destination | 185.220.101.45:443 | High |
